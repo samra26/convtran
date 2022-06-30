@@ -1,6 +1,6 @@
 import torch
 from torch.nn import functional as F
-from networks.JL_DCF import build_model
+from new_networks.conformer import build_model
 import numpy as np
 import os
 import cv2
