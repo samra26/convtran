@@ -544,11 +544,11 @@ class GDELayer(nn.Module):
     def forward(self, x, y,coarse_sal):
         w,h=coarse_sal.size(2),coarse_sal.size(3)
         out_RA=[]
-        m=0
+     
         for j in range(12,4,-1):
             rgb_part=(x[j][0]).unsqueeze(0)
             depth_part=(x[j][1]).unsqueeze(0)
-            print('rgb d sal size',j,"......",rgb_part.shape,depth_part.shape,coarse_sal.shape)
+            
             if (rgb_part.size(2)!= coarse_sal.size(2)) or (rgb_part.size(3) != coarse_sal.size(3)):
                 rgb_part = F.interpolate(rgb_part, w, mode='bilinear', align_corners=True)
                 depth_part = F.interpolate(depth_part, w, mode='bilinear', align_corners=True)
@@ -563,12 +563,12 @@ class GDELayer(nn.Module):
                 out_RA.append(self.conv1024(c_att))
             else:
                 out_RA.append(self.conv512(c_att))
-            print('GDElayer out',out_RA[m].shape)
-            m+=1
+            gde_t=y[0]*y[1]
+
                 
             
 
-        return rgb_att, depth_att
+        return out_RA,gde_t
 
 class JL_DCF(nn.Module):
     def __init__(self,JLModule,lde_layers,coarse_layer,gde_layers):
@@ -584,6 +584,14 @@ class JL_DCF(nn.Module):
         lde_c,lde_t = self.lde(x,y)
         coarse_sal=self.coarse_layer(x[12],y[12])
         gde_c,gde_t=self.gde_layers(x,y,coarse_sal)
+        print('lde_c',lde_c.shape)
+        print('lde_t',lde_t.shape)
+        print('gde_c',gde_c.shape)
+        print('gde_t',gde_t.shape)
+        print('coarse_sal',coarse_sal.shape)
+        print('q',q.shape)
+        print('k',k.shape)
+        print('v',v.shape)
         
         return coarse_sal,coarse_sal
 
