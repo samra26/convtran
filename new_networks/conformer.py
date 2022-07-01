@@ -571,30 +571,43 @@ class GDELayer(nn.Module):
 
         return out_RA,gde_t
 
+class Decoder(nn.Module):
+    def __init__(self):
+        super(Decoder, self).__init__()
+
+
+    def forward(self, lde_c,gde_c,lde_t,gde_t,q,k,v):
+        
+
+        
+        return sal_final
+
 class JL_DCF(nn.Module):
-    def __init__(self,JLModule,lde_layers,coarse_layer,gde_layers):
+    def __init__(self,JLModule,lde_layers,coarse_layer,gde_layers,decoder):
         super(JL_DCF, self).__init__()
         
         self.JLModule = JLModule
         self.lde = lde_layers
         self.coarse_layer=coarse_layer
         self.gde_layers=gde_layers
+        self.decoder=decoder
         
     def forward(self, f_all):
         x,y,q,k,v = self.JLModule(f_all)
         lde_c,lde_t = self.lde(x,y)
         coarse_sal=self.coarse_layer(x[12],y[12])
         gde_c,gde_t=self.gde_layers(x,y,coarse_sal)
-        print('lde_c',lde_c[0].shape,len(lde_c))
+        '''print('lde_c',lde_c[0].shape,len(lde_c))
         print('lde_t',lde_t[0].shape,len(lde_t))
         print('gde_c',gde_c[0].shape,len(gde_c))
         print('gde_t',gde_t[0].shape,len(gde_t))
         print('coarse_sal',coarse_sal.shape)
         print('q',q[0].shape,len(q))
         print('k',k[0].shape,len(k))
-        print('v',v[0].shape,len(v))
+        print('v',v[0].shape,len(v))'''
+        final_sal=self.decoder(lde_c,gde_c,lde_t,gde_t,q,k,v)
         
-        return coarse_sal,coarse_sal,gde_c
+        return final_sal,coarse_sal
 
 def build_model(network='conformer', base_model_cfg='conformer'):
    
@@ -603,4 +616,4 @@ def build_model(network='conformer', base_model_cfg='conformer'):
         
    
 
-        return JL_DCF(JLModule(backbone),LDELayer(),CoarseLayer(),GDELayer())
+        return JL_DCF(JLModule(backbone),LDELayer(),CoarseLayer(),GDELayer(),Decoder())
