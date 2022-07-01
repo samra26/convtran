@@ -545,6 +545,7 @@ class GDELayer(nn.Module):
         for j in range(12,4,-1):
             rgb_part=(x[j][0]).unsqueeze(0)
             depth_part=(x[j][1]).unsqueeze(0)
+            print('rgb d sal size',j,"......",rgb_part.shape,depth_part.shape,coarse_sal.shape)
             if (rgb_part.size(2)!= coarse_sal.size(2)) or (rgb_part.size(3) != coarse_sal.size(3)):
                 rgb_part = F.interpolate(rgb_part, w, mode='bilinear', align_corners=True)
                 depth_part = F.interpolate(depth_part, w, mode='bilinear', align_corners=True)
