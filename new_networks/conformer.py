@@ -537,6 +537,8 @@ class GDELayer(nn.Module):
     def __init__(self):
         super(GDELayer, self).__init__()
         self.sigmoid = nn.Sigmoid()
+        self.conv1024=nn.Conv2d(1024,1,1,1)
+        self.conv512=nn.Conv2d(512,1,1,1)
         
 
     def forward(self, x, y,coarse_sal):
@@ -556,7 +558,10 @@ class GDELayer(nn.Module):
             Ad=1-sald
             depth_att=Ad*depth_part
             c_att = torch.cat((rgb_att, depth_att), dim=0)
-            out_RA.append(c_att)
+            if (rgb_part.size(1)==1024):
+                out_RA.append(self.conv1024(c_att))
+            else:
+                out_RA.append(self.conv512(c_att))
             print('GDElayer out',c_att.shape)
                 
             
