@@ -585,14 +585,14 @@ class JL_DCF(nn.Module):
         lde_c,lde_t = self.lde(x,y)
         coarse_sal=self.coarse_layer(x[12],y[12])
         gde_c,gde_t=self.gde_layers(x,y,coarse_sal)
-        print('lde_c',lde_c.shape)
-        print('lde_t',lde_t.shape)
-        print('gde_c',gde_c.shape)
-        print('gde_t',gde_t.shape)
+        print('lde_c',lde_c[0].shape,len(lde_c))
+        print('lde_t',lde_t[0].shape,len(lde_t))
+        print('gde_c',gde_c[0].shape,len(gde_c))
+        print('gde_t',gde_t[0].shape,len(gde_t))
         print('coarse_sal',coarse_sal.shape)
-        print('q',q.shape)
-        print('k',k.shape)
-        print('v',v.shape)
+        print('q',q[0].shape,len(q))
+        print('k',k[0].shape,len(k))
+        print('v',v[0].shape,len(v))
         
         return coarse_sal,coarse_sal
 
