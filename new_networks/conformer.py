@@ -510,7 +510,7 @@ class LDELayer(nn.Module):
             b=self.conv_d2(a)
             fconv_d=self.relu(self.conv_d3(b))
             tran_c.append(list_y[j][0]*list_y[j][1])
-            sum=(fconv_c+fconv_d)
+            sum=torch.cat((fconv_c, fconv_d), dim=0)
             result.append(sum)
             
             
@@ -594,7 +594,7 @@ class JL_DCF(nn.Module):
         print('k',k[0].shape,len(k))
         print('v',v[0].shape,len(v))
         
-        return coarse_sal,coarse_sal
+        return coarse_sal,coarse_sal,gde_c
 
 def build_model(network='conformer', base_model_cfg='conformer'):
    
