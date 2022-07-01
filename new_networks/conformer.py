@@ -562,7 +562,7 @@ class GDELayer(nn.Module):
                 out_RA.append(self.conv1024(c_att))
             else:
                 out_RA.append(self.conv512(c_att))
-            print('GDElayer out',c_att.shape)
+            print('GDElayer out',out_RA[j].shape)
                 
             
 
