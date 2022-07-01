@@ -495,6 +495,7 @@ class LDELayer(nn.Module):
         #fconv_c=[]
         #fconv_d=[]
         result=[]
+        tran_c=[]
         
         '''for i in range(len(list_x)):
             rgb_conv = list_x[i][0]
@@ -508,7 +509,7 @@ class LDELayer(nn.Module):
             a=(self.conv_d1(list_x[j][1])).unsqueeze(0)  
             b=self.conv_d2(a)
             fconv_d=self.relu(self.conv_d3(b))
-            tran_c=list_y[j][0]*list_y[j][1]
+            tran_c.append(list_y[j][0]*list_y[j][1])
             sum=(fconv_c+fconv_d)
             result.append(sum)
             
@@ -548,7 +549,7 @@ class GDELayer(nn.Module):
         for j in range(12,4,-1):
             rgb_part=(x[j][0]).unsqueeze(0)
             depth_part=(x[j][1]).unsqueeze(0)
-            
+            print('shape of y',y[j][0].shape,y[j][1].shape)
             if (rgb_part.size(2)!= coarse_sal.size(2)) or (rgb_part.size(3) != coarse_sal.size(3)):
                 rgb_part = F.interpolate(rgb_part, w, mode='bilinear', align_corners=True)
                 depth_part = F.interpolate(depth_part, w, mode='bilinear', align_corners=True)
@@ -563,7 +564,7 @@ class GDELayer(nn.Module):
                 out_RA.append(self.conv1024(c_att))
             else:
                 out_RA.append(self.conv512(c_att))
-            gde_t=y[0]*y[1]
+            gde_t.append(y[j][0]*y[j][1])
 
                 
             
