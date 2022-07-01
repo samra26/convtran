@@ -503,7 +503,7 @@ class LDELayer(nn.Module):
             depth_tran = list_y[i][1]
             print("******LDE layer******")
             print(i,"     ",rgb_conv.shape,rgb_tran.shape,depth_tran.shape)'''
-        for j in range(1,4):
+        for j in range(1,5):
             fconv_c=(self.conv_c(list_x[j][0])).unsqueeze(0)
             a=(self.conv_d1(list_x[j][1])).unsqueeze(0)  
             b=self.conv_d2(a)
@@ -536,14 +536,31 @@ class CoarseLayer(nn.Module):
 class GDELayer(nn.Module):
     def __init__(self):
         super(GDELayer, self).__init__()
-        self.relu = nn.ReLU(inplace=True)
+        self.sigmoid = nn.Sigmoid()
         
 
-    def forward(self, x, y):
-        gde_c=x
-        gde_t=y
-        
-        return gde_c,gde_t
+    def forward(self, x, y,coarse_sal):
+        w,h=coarse_sal.size(2),coarse_sal.size(3)
+        out_RA=[]
+        for j in range(12,4,-1):
+            rgb_part=x[j][0]
+            depth_part=x[j][1]
+            if (rgb_part.size(2)!= coarse_sal.size(2)) or (rgb_part.size(3) != coarse_sal.size(3)):
+                rgb_part = F.interpolate(rgb_part, w, mode='bilinear', align_corners=True)
+                depth_part = F.interpolate(depth_part, w, mode='bilinear', align_corners=True)
+            salr=self.sigmoid(coarse_sal[0])
+            Ar=1-salr
+            rgb_att=Ar*rgb_part
+            sald=self.sigmoid(coarse_sal[1])
+            Ad=1-sald
+            depth_att=Ad*depth_part
+            c_att = torch.cat((rgb_att, depth_att), dim=0)
+            out_RA.append(c_att)
+            print('GDElayer out',c_att.shape)
+                
+            
+
+        return rgb_att, depth_att
 
 class JL_DCF(nn.Module):
     def __init__(self,JLModule,lde_layers,coarse_layer,gde_layers):
@@ -558,7 +575,7 @@ class JL_DCF(nn.Module):
         x,y,q,k,v = self.JLModule(f_all)
         lde_c,lde_t = self.lde(x,y)
         coarse_sal=self.coarse_layer(x[12],y[12])
-        gde_c,gde_t=self.gde_layers(x,y)
+        gde_c,gde_t=self.gde_layers(x,y,coarse_sal)
         
         return coarse_sal,coarse_sal
 
