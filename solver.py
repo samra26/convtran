@@ -99,11 +99,11 @@ class Solver(object):
                     device = torch.device(self.config.device_id)
                     sal_image, sal_depth, sal_label = sal_image.to(device), sal_depth.to(device), sal_label.to(device)
 
-                sal_label_coarse = F.interpolate(sal_label, size_coarse, mode='bilinear', align_corners=True)
+                #sal_label_coarse = F.interpolate(sal_label, size_coarse, mode='bilinear', align_corners=True)
                 sal_label_coarse = torch.cat((sal_label_coarse, sal_label_coarse), dim=0)
                 sal_input = torch.cat((sal_image, sal_depth), dim=0)
                 sal_final, sal_coarse = self.net(sal_input)
-
+                sal_label = torch.cat((sal_label, sal_label), dim=0)
                 sal_loss_coarse = F.binary_cross_entropy_with_logits(sal_coarse, sal_label_coarse, reduction='sum')
                 sal_loss_final = F.binary_cross_entropy_with_logits(sal_final, sal_label, reduction='sum')
 
