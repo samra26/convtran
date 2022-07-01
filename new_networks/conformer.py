@@ -49,7 +49,7 @@ class Attention(nn.Module):
         x = (attn @ v).transpose(1, 2).reshape(B, N, C)
         x = self.proj(x)
         x = self.proj_drop(x)
-        return x
+        return x,q,k,v
 
 
 class Block(nn.Module):
@@ -67,9 +67,11 @@ class Block(nn.Module):
         self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, drop=drop)
 
     def forward(self, x):
-        x = x + self.drop_path(self.attn(self.norm1(x)))
+        x_norm=self.norm1(x)
+        x_att,q,k,v=self.attn(x_norm)
+        x = x + self.drop_path(x_att)
         x = x + self.drop_path(self.mlp(self.norm2(x)))
-        return x
+        return x,q,k,v
 
 
 class ConvBlock(nn.Module):
@@ -291,7 +293,7 @@ class ConvTransBlock(nn.Module):
 
         x_st = self.squeeze_block(x2, x_t)
 
-        x_t = self.trans_block(x_st + x_t)
+        x_t,q,k,v = self.trans_block(x_st + x_t)
 
         if self.num_med_block > 0:
             for m in self.med_block:
@@ -300,7 +302,7 @@ class ConvTransBlock(nn.Module):
         x_t_r = self.expand_block(x_t, H // self.dw_stride, W // self.dw_stride)
         x = self.fusion_block(x, x_t_r, return_x_2=False)
 
-        return x, x_t
+        return x, x_t,q,k,v
 
 
 class Conformer(nn.Module):
@@ -420,6 +422,9 @@ class Conformer(nn.Module):
         cls_tokens = self.cls_token.expand(B, -1, -1)
         conv_features=[]
         tran_features=[]
+        q=[]
+        k=[]
+        v=[]
 
         # pdb.set_trace()
         # stem stage [N, 3, 224, 224] -> [N, 64, 56, 56]
@@ -434,17 +439,23 @@ class Conformer(nn.Module):
         tran_features.append(x_t)
        
         x_t = torch.cat([cls_tokens, x_t], dim=1)
-        x_t = self.trans_1(x_t)
+        x_t,q1,k1,v1 = self.trans_1(x_t)
         tran_features.append(x_t)
+        q.append(q1)
+        k.append(k1)
+        v.append(v1)
         
         # 2 ~ final 
         for i in range(2, self.fin_stage):
-            x, x_t = eval('self.conv_trans_' + str(i))(x, x_t)
+            x, x_t,qi,ki,vi = eval('self.conv_trans_' + str(i))(x, x_t)
             conv_features.append(x)
             tran_features.append(x_t)
+            q.append(qi)
+            k.append(ki)
+            v.append(vi)
 
         
-        return conv_features,tran_features
+        return conv_features,tran_features,q,k,v
 
 class JLModule(nn.Module):
     def __init__(self, backbone):
@@ -462,12 +473,12 @@ class JLModule(nn.Module):
 
     def forward(self, x):
 
-        conv,tran = self.backbone(x)
+        conv,tran,q,k,v = self.backbone(x)
         '''for i in range(len(conv)):
             print(i,"     ",conv[i].shape,tran[i].shape)'''
         
 
-        return conv,tran # list of tensor that compress model output
+        return conv,tran,q,k,v # list of tensor that compress model output
 
 class LDELayer(nn.Module):
     def __init__(self):
@@ -493,7 +504,7 @@ class LDELayer(nn.Module):
             print("******LDE layer******")
             print(i,"     ",rgb_conv.shape,rgb_tran.shape,depth_tran.shape)'''
         for j in range(1,4):
-            fconv_c=self.conv_c(list_x[j])
+            fconv_c=(self.conv_c(list_x[j][0])).unsqueeze(0)
             a=(self.conv_d1(list_x[j][1])).unsqueeze(0)  
             b=self.conv_d2(a)
             fconv_d=self.relu(self.conv_d3(b))
@@ -522,18 +533,32 @@ class CoarseLayer(nn.Module):
         
         return x_sal+y_sal+(x_sal*y_sal)
 
+class GDELayer(nn.Module):
+    def __init__(self):
+        super(GDELayer, self).__init__()
+        self.relu = nn.ReLU(inplace=True)
+        
+
+    def forward(self, x, y):
+        gde_c=x
+        gde_t=y
+        
+        return gde_c,gde_t
+
 class JL_DCF(nn.Module):
-    def __init__(self,JLModule,lde_layers,coarse_layer):
+    def __init__(self,JLModule,lde_layers,coarse_layer,gde_layers):
         super(JL_DCF, self).__init__()
         
         self.JLModule = JLModule
         self.lde = lde_layers
         self.coarse_layer=coarse_layer
+        self.gde_layers=gde_layers
         
     def forward(self, f_all):
-        x,y = self.JLModule(f_all)
-        lde_combined = self.lde(x,y)
+        x,y,q,k,v = self.JLModule(f_all)
+        lde_c,lde_t = self.lde(x,y)
         coarse_sal=self.coarse_layer(x[12],y[12])
+        gde_c,gde_t=self.gde_layers(x,y)
         
         return coarse_sal,coarse_sal
 
@@ -544,4 +569,4 @@ def build_model(network='conformer', base_model_cfg='conformer'):
         
    
 
-        return JL_DCF(JLModule(backbone),LDELayer(),CoarseLayer())
+        return JL_DCF(JLModule(backbone),LDELayer(),CoarseLayer(),GDELayer())
