@@ -545,7 +545,7 @@ class GDELayer(nn.Module):
     def forward(self, x, y,coarse_sal):
         w,h=coarse_sal.size(2),coarse_sal.size(3)
         out_RA=[]
-     
+        gde_t=[]
         for j in range(12,4,-1):
             rgb_part=(x[j][0]).unsqueeze(0)
             depth_part=(x[j][1]).unsqueeze(0)
