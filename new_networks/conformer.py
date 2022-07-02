@@ -593,12 +593,12 @@ class Decoder(nn.Module):
             low_features_conv.append(torch.cat((lde_c[j][0] + lde_c[j][1], lde_c[j][0] * lde_c[j][1]), dim=1))
             lde_t[j]=self.fc1(lde_t[j])
             low_features_tran.append(torch.cat((lde_t[j][1]*(self.softmax(q[l_index][1]*k[l_index][0])*v[l_index][0]),lde_t[l_index][0]*(self.softmax(q[l_index][0]*k[l_index][1])*v[l_index][1])),dim=1)
-            l_index+=1
+            l_index=l_index+1
         for k in range(len(gde_c)):
             high_features_conv.append(torch.cat((gde_c[k][0] + gde_c[k][1], gde_c[k][0] * gde_c[k][1]), dim=1))
             gde_t[k]=self.fc1(gde_t[k])
             high_features_tran.append(torch.cat((gde_t[k][1]*(self.softmax(q[h_index][1]*k[h_index][0])*v[h_index][0]),lde_t[h_index][0]*(self.softmax(q[h_index][0]*k[h_index][1])*v[h_index][1])),dim=1)
-            h_index+=1
+            h_index=h_index+1
         low_features_tran=low_features_tran.unsqueeze(0)
         high_features_tran=high_features_tran.unsqueeze(0)
         for m in range(12):
