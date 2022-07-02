@@ -574,13 +574,24 @@ class GDELayer(nn.Module):
 class Decoder(nn.Module):
     def __init__(self):
         super(Decoder, self).__init__()
+        self.upsample=nn.ConvTranspose2d(64, 1, kernel_size=3, stride=4, padding=1, output_padding=3,dilation=1)
+        
 
 
     def forward(self, lde_c,gde_c,lde_t,gde_t,q,k,v):
+        low=[]
+        for i in range(len(lde_c)):
+            low.append(self.upsample(lde_c[i]))
+        for j in range(len(low)):
+            low_features=torch.cat((low[j][0] + low[j][1], low[j][0] * low[j][1]), dim=1)
+        for k in range(len(gde_c)):
+            high_features=torch.cat((gde_c[k][0] + gde_c[k][1], gde_c[k][0] * gde_c[k][1]), dim=1)
+            
+            
         
 
         
-        return sal_final
+        return low
 
 class JL_DCF(nn.Module):
     def __init__(self,JLModule,lde_layers,coarse_layer,gde_layers,decoder):
@@ -597,14 +608,15 @@ class JL_DCF(nn.Module):
         lde_c,lde_t = self.lde(x,y)
         coarse_sal=self.coarse_layer(x[12],y[12])
         gde_c,gde_t=self.gde_layers(x,y,coarse_sal)
-        '''print('lde_c',lde_c[0].shape,len(lde_c))
+        print('lde_c',lde_c[0].shape,len(lde_c))
         print('lde_t',lde_t[0].shape,len(lde_t))
         print('gde_c',gde_c[0].shape,len(gde_c))
         print('gde_t',gde_t[0].shape,len(gde_t))
         print('coarse_sal',coarse_sal.shape)
-        print('q',q[0].shape,len(q))
-        print('k',k[0].shape,len(k))
-        print('v',v[0].shape,len(v))'''
+        for i in range(len(q)):
+            print('q',q[i].shape,len(q))
+            print('k',k[i].shape,len(k))
+            print('v',v[i].shape,len(v))
         final_sal=self.decoder(lde_c,gde_c,lde_t,gde_t,q,k,v)
         
         return final_sal,coarse_sal
