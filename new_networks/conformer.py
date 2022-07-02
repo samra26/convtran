@@ -575,6 +575,7 @@ class Decoder(nn.Module):
     def __init__(self):
         super(Decoder, self).__init__()
         self.upsample=nn.ConvTranspose2d(64, 1, kernel_size=3, stride=4, padding=1, output_padding=3,dilation=1)
+        self.fc1=nn.Linear(384,64)
         
 
 
@@ -583,9 +584,10 @@ class Decoder(nn.Module):
         for i in range(len(lde_c)):
             low.append(self.upsample(lde_c[i]))
         for j in range(len(low)):
-            low_features=torch.cat((low[j][0] + low[j][1], low[j][0] * low[j][1]), dim=1)
+            low_features_conv=torch.cat((low[j][0] + low[j][1], low[j][0] * low[j][1]), dim=1)
+            lde_t[j]=self.fc1(lde_t[j])
         for k in range(len(gde_c)):
-            high_features=torch.cat((gde_c[k][0] + gde_c[k][1], gde_c[k][0] * gde_c[k][1]), dim=1)
+            high_features_conv=torch.cat((gde_c[k][0] + gde_c[k][1], gde_c[k][0] * gde_c[k][1]), dim=1)
             
             
         
