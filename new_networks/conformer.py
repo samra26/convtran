@@ -581,7 +581,7 @@ class Decoder(nn.Module):
 
     def forward(self, lde_c,gde_c,lde_t,gde_t,q,k,v):
         low_features_conv=[]
-        high_featues_conv=[]
+        high_features_conv=[]
         for j in range(len(lde_c)):
             lde_c[j]=self.upsample(lde_c[j])
             low_features_conv.append(torch.cat((lde_c[j][0] + lde_c[j][1], lde_c[j][0] * lde_c[j][1]), dim=1))
