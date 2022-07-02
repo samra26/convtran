@@ -580,20 +580,21 @@ class Decoder(nn.Module):
 
 
     def forward(self, lde_c,gde_c,lde_t,gde_t,q,k,v):
-        low=[]
-        for i in range(len(lde_c)):
-            low.append(self.upsample(lde_c[i]))
-        for j in range(len(low)):
-            low_features_conv=torch.cat((low[j][0] + low[j][1], low[j][0] * low[j][1]), dim=1)
+        low_features_conv=[]
+        high_featues_conv=[]
+        for j in range(len(lde_c)):
+            lde_c[j]=self.upsample(lde_c[j])
+            low_features_conv.append(torch.cat((lde_c[j][0] + lde_c[j][1], lde_c[j][0] * lde_c[j][1]), dim=1))
             lde_t[j]=self.fc1(lde_t[j])
         for k in range(len(gde_c)):
-            high_features_conv=torch.cat((gde_c[k][0] + gde_c[k][1], gde_c[k][0] * gde_c[k][1]), dim=1)
-            
+            high_features_conv.append(torch.cat((gde_c[k][0] + gde_c[k][1], gde_c[k][0] * gde_c[k][1]), dim=1))
+            gde_t[k]=self.fc1(gde_t[k])
+        print(len(low_features_conv))         
             
         
 
         
-        return low
+        return low_features_conv
 
 class JL_DCF(nn.Module):
     def __init__(self,JLModule,lde_layers,coarse_layer,gde_layers,decoder):
