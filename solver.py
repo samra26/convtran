@@ -6,7 +6,7 @@ import os
 import cv2
 import time
 from torch.utils.tensorboard import SummaryWriter
-
+from torchsummary import summary
 writer = SummaryWriter('log/run' + time.strftime("%d-%m"))
 
 size_coarse = (20, 20)
@@ -41,6 +41,7 @@ class Solver(object):
         print(name)
         print(model)
         print("The number of parameters: {}".format(num_params))
+        summary(model, (3,320,320))
 
     # build the network
     def build_model(self):
