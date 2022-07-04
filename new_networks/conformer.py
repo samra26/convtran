@@ -619,7 +619,7 @@ class Decoder(nn.Module):
             cat_tran_low=torch.cat((tran_low1,tran_low2),dim=0)
             cat_tran_low=torch.tensor_split(cat_tran_low, 400, dim=1)
             low_features_tran.append(cat_tran_low[0])
-            print('low_features_tran',low_features_tran[0].shape)
+            print('low_features_tran',low_features_tran[0].shape,low_features_tran[1].shape)
             l_index=l_index+1
         for k1 in range(len(gde_c)):
             sum_high=(gde_c[k1][0] + gde_c[k1][1]).unsqueeze(0)
