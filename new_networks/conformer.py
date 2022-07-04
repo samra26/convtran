@@ -599,7 +599,10 @@ class Decoder(nn.Module):
             print('low',low.shape)
             low_features_conv.append(low)
             lde_t[j]=self.fc1(lde_t[j])
-            low_features_tran.append(torch.cat((lde_t[j][1]*(self.softmax(q[l_index][1].squeeze(1)*k[l_index][0].squeeze(1))*v[l_index][0].squeeze(1)),lde_t[l_index][0]*(self.softmax(q[l_index][0].squeeze(1)*k[l_index][1].squeeze(1))*v[l_index][1].squeeze(1))),dim=0))
+            tran_low1=(lde_t[j][1]*(self.softmax(q[l_index][1].squeeze(1)*k[l_index][0].squeeze(1))*v[l_index][0].squeeze(1))).unsqueeze(0)
+            tran_low2=(lde_t[j][0]*(self.softmax(q[l_index][0].squeeze(1)*k[l_index][1].squeeze(1))*v[l_index][1].squeeze(1))).unsqueeze(0)
+            print('tran low1 2',tran_low1.shape,tran_low2.shape)
+            low_features_tran.append(torch.cat((tran_low1,tran_low2),dim=0))
             print('low_features_tran',low_features_tran[0].shape)
             l_index=l_index+1
         for k1 in range(len(gde_c)):
