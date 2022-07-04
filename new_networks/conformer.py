@@ -596,7 +596,8 @@ class Decoder(nn.Module):
         high_features_conv=[]
         low_features_tran=[]
         high_features_tran=[]
-        
+        for a in range(len(q)):
+            print('shape of q',q[a].shape)
         l_index=0
         h_index=4
         for j in range(len(lde_c)):
@@ -658,9 +659,7 @@ class JL_DCF(nn.Module):
         print('gde_c',gde_c[0].shape,len(gde_c))
         print('gde_t',gde_t[0].shape,len(gde_t))
         print('coarse_sal',coarse_sal.shape)
-        q=q.permute(0,2,1,3)
-        k=k.permute(0,2,1,3)
-        v=v.permute(0,2,1,3)
+
         for i in range(len(q)):
             print('q',q[i].shape,len(q))
             print('k',k[i].shape,len(k))
