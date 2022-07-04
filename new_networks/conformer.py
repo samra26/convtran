@@ -606,14 +606,16 @@ class Decoder(nn.Module):
             print('low_features_tran',low_features_tran[0].shape)
             l_index=l_index+1
         for k1 in range(len(gde_c)):
-            high_features_conv.append(torch.cat((gde_c[k1][0] + gde_c[k1][1], gde_c[k1][0] * gde_c[k1][1]), dim=0))
+            sum_high=(gde_c[k1][0] + gde_c[k1][1]).unsqueeze(0)
+            mul_high=(gde_c[k1][0] * gde_c[k1][1]).unsqueeze(0)
+            high_features_conv.append(torch.cat((sum_high,mul_high), dim=0))
             gde_t[k1]=self.fc1(gde_t[k1])
-            #high_features_tran.append(torch.cat((gde_t[k][1]*(self.softmax(q[h_index][1].squeeze(1)*k[h_index][0].squeeze(1))*v[h_index][0].squeeze(1)),gde_t[k][0]*(self.softmax(q[h_index][0].squeeze(1)*k[h_index][1].squeeze(1))*v[h_index][1].squeeze(1))),dim=1))
-            high_features_tran.append(torch.cat((gde_t[k1][1]*(self.softmax(q[h_index][1].squeeze(1)*k[h_index][0].squeeze(1))*v[h_index][0].squeeze(1)),gde_t[k1][0]*(self.softmax(q[h_index][0].squeeze(1)*k[h_index][1].squeeze(1))*v[h_index][1].squeeze(1))),dim=0))
+            tran_high1=(gde_t[k1][1]*(self.softmax(q[h_index][1].squeeze(1)*k[h_index][0].squeeze(1))*v[h_index][0].squeeze(1))).unsqueeze(0)
+            tran_high2=(gde_t[k1][0]*(self.softmax(q[h_index][0].squeeze(1)*k[h_index][1].squeeze(1))*v[h_index][1].squeeze(1))).unsqueeze(0)
+            high_features_tran.append(torch.cat((tran_high1,tran_high2),dim=0))
             h_index=h_index+1
             print('ok too')
-        #low_features_tran=low_features_tran.unsqueeze(0)
-        #high_features_tran=high_features_tran.unsqueeze(0)
+
         for m in range(7):
             print('high_features_conv',high_features_conv[m].shape)
             print('high_features_tran',high_features_tran[m].shape)
