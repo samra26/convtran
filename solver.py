@@ -103,12 +103,16 @@ class Solver(object):
                 #sal_label_coarse = F.interpolate(sal_label, size_coarse, mode='bilinear', align_corners=True)
                 sal_label_coarse = torch.cat((sal_label, sal_label), dim=0)
                 sal_input = torch.cat((sal_image, sal_depth), dim=0)
-                sal_final, sal_coarse = self.net(sal_input)
+                sal_lde_conv,sal_lde_tran,sal_gde_conv,sal_gde_tran, sal_coarse = self.net(sal_input)
                 sal_label = torch.cat((sal_label, sal_label), dim=0)
                 sal_loss_coarse = F.binary_cross_entropy_with_logits(sal_coarse, sal_label_coarse, reduction='sum')
-                sal_loss_final = F.binary_cross_entropy_with_logits(sal_final, sal_label, reduction='sum')
+                sal_loss_lde_conv = F.binary_cross_entropy_with_logits(sal_lde_conv, sal_label, reduction='sum')
+                sal_loss_lde_tran = F.binary_cross_entropy_with_logits(sal_lde_tran, sal_label, reduction='sum')
+                sal_loss_gde_conv= F.binary_cross_entropy_with_logits(sal_gde_conv, sal_label, reduction='sum')
+                sal_loss_gde_tran = F.binary_cross_entropy_with_logits(sal_gde_tran, sal_label, reduction='sum')
+                
 
-                sal_loss_fuse = sal_loss_final + 256 * sal_loss_coarse
+                sal_loss_fuse = sal_lde_conv + sal_lde_tran + sal_gde_conv + sal_gde_tran + 256 * sal_loss_coarse
                 sal_loss = sal_loss_fuse / (self.iter_size * self.config.batch_size)
                 r_sal_loss += sal_loss.data
                 sal_loss.backward()
