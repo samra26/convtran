@@ -41,7 +41,7 @@ class Solver(object):
         print(name)
         print(model)
         print("The number of parameters: {}".format(num_params))
-        summary(model, (3,320,320))
+        
 
     # build the network
     def build_model(self):
