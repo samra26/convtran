@@ -8,7 +8,7 @@ import time
 from torch.utils.tensorboard import SummaryWriter
 from torchsummary import summary
 writer = SummaryWriter('log/run' + time.strftime("%d-%m"))
-
+import matplotlib.pyplot as plt
 size_coarse = (20, 20)
 
 
@@ -56,6 +56,12 @@ class Solver(object):
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr=self.lr, weight_decay=self.wd)
 
         self.print_network(self.net, 'JL-DCF Structure')
+        
+    def my_plot(epochs, loss):
+        plt.figure()
+        plt.plot(epochs, loss)
+        plt.xlabel("epochs")
+        plt.ylabel("loss")
 
     def test(self):
         print('Testing...')
@@ -87,6 +93,7 @@ class Solver(object):
     def train(self):
         iter_num = len(self.train_loader.dataset) // self.config.batch_size
         aveGrad = 0
+        loss_vals=  []
         self.optimizer.zero_grad()
         for epoch in range(self.config.epoch):
             r_sal_loss = 0
@@ -106,21 +113,22 @@ class Solver(object):
                 sal_lde_conv,sal_lde_tran,sal_gde_conv,sal_gde_tran, sal_coarse = self.net(sal_input)
                 sal_label = torch.cat((sal_label, sal_label), dim=0)
                 sal_loss_coarse = F.binary_cross_entropy_with_logits(sal_coarse, sal_label_coarse, reduction='sum')
-                print('sal_loss_coarse',sal_loss_coarse)
+                #print('sal_loss_coarse',sal_loss_coarse)
                 sal_loss_lde_conv = F.binary_cross_entropy_with_logits(sal_lde_conv, sal_label, reduction='sum')
-                print('sal_loss_lde_conv',sal_loss_lde_conv)
+                #print('sal_loss_lde_conv',sal_loss_lde_conv)
                 sal_loss_lde_tran = F.binary_cross_entropy_with_logits(sal_lde_tran, sal_label, reduction='sum')
-                print('sal_loss_lde_tran',sal_loss_lde_tran)
+                #print('sal_loss_lde_tran',sal_loss_lde_tran)
                 sal_loss_gde_conv= F.binary_cross_entropy_with_logits(sal_gde_conv, sal_label, reduction='sum')
-                print('sal_loss_gde_conv',sal_loss_gde_conv)
+                #print('sal_loss_gde_conv',sal_loss_gde_conv)
                 sal_loss_gde_tran = F.binary_cross_entropy_with_logits(sal_gde_tran, sal_label, reduction='sum')
-                print('sal_loss_gde_tran',sal_loss_gde_tran)
+                #print('sal_loss_gde_tran',sal_loss_gde_tran)
 
                 sal_loss_fuse = sal_loss_lde_conv + sal_loss_lde_tran + sal_loss_gde_conv + sal_loss_gde_tran + sal_loss_coarse
-                print('sal_loss_fuse',sal_loss_fuse)
+                #print('sal_loss_fuse',sal_loss_fuse)
                 sal_loss = sal_loss_fuse / (self.iter_size * self.config.batch_size)
-                print('sal_loss',sal_loss)
+                #print('sal_loss',sal_loss)
                 r_sal_loss += sal_loss.data
+                r_sal_loss_item+=sal_loss.item() * sal_depth.size(0)
                 sal_loss.backward()
 
                 # accumulate gradients as done in DSS
@@ -137,9 +145,10 @@ class Solver(object):
                     writer.add_scalar('training loss', r_sal_loss / (self.show_every / self.iter_size),
                                       epoch * len(self.train_loader.dataset) + i)
                     r_sal_loss = 0
-
+            train_loss=r_sal_loss_item/len(self.train_loader.dataset)
+            loss_vals.append(train_loss)
             if (epoch + 1) % self.config.epoch_save == 0:
                 torch.save(self.net.state_dict(), '%s/epoch_%d.pth' % (self.config.save_folder, epoch + 1))
-
+        my_plot(np.linspace(1, self.epoch, self.epoch).astype(int), loss_vals)
         # save model
         torch.save(self.net.state_dict(), '%s/final.pth' % self.config.save_folder)
