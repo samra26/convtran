@@ -595,6 +595,10 @@ class Decoder(nn.Module):
         high_features_conv=[]
         low_features_tran=[]
         high_features_tran=[]
+        lfc=torch.zeros(2,1,320,320)
+        gfc=torch.zeros(2,1,320,320)
+        lft=torch.zeros(2,1,320,320)
+        gft=torch.zeros(2,1,320,320)
         for a in range(len(q)):
             q[a]=q[a].permute(0,2,1,3).flatten(2)
             k[a]=k[a].permute(0,2,1,3).flatten(2)
@@ -609,30 +613,34 @@ class Decoder(nn.Module):
             sum_low=(lde_c[j][0] + lde_c[j][1]).unsqueeze(0)
             mul_low=(lde_c[j][0] * lde_c[j][1]).unsqueeze(0)
             print('sumlow mullow',sum_low.shape,mul_low.shape)
-            low=torch.cat((sum_low,mul_low), dim=0)
-            print('low',low.shape)
-            low_features_conv.append(low)
-            
+            lfc=torch.cat((sum_low,mul_low), dim=0)
+            print('lfc',lfc.shape)
+            low_features_conv.append(lfc)
+            lfc+=lfc
             tran_low1=(lde_t[j][1]*(self.softmax(q[l_index][1]*k[l_index][0])*v[l_index][0])).unsqueeze(0)
             tran_low2=(lde_t[j][0]*(self.softmax(q[l_index][0]*k[l_index][1])*v[l_index][1])).unsqueeze(0)
             print('tran low1 2',tran_low1.shape,tran_low2.shape)
             cat_tran_low=torch.cat((tran_low1,tran_low2),dim=0)
             cat_tran_low=cat_tran_low.unsqueeze(1)
-            cat_tran_low=F.interpolate(cat_tran_low, (320,320), mode='bilinear', align_corners=True)
-            low_features_tran.append(cat_tran_low)
+            lft=F.interpolate(cat_tran_low, (320,320), mode='bilinear', align_corners=True)
+            low_features_tran.append(lft)
+            lft+=lft
             
             l_index=l_index+1
         for k1 in range(len(gde_c)):
             sum_high=(gde_c[k1][0] + gde_c[k1][1]).unsqueeze(0)
             mul_high=(gde_c[k1][0] * gde_c[k1][1]).unsqueeze(0)
-            high_features_conv.append(torch.cat((sum_high,mul_high), dim=0))
+            gfc=torch.cat((sum_high,mul_high), dim=0)
+            high_features_conv.append(gfc)
+            gfc+=gfc
             
             tran_high1=(gde_t[k1][1]*(self.softmax(q[h_index][1]*k[h_index][0])*v[h_index][0])).unsqueeze(0)
             tran_high2=(gde_t[k1][0]*(self.softmax(q[h_index][0]*k[h_index][1])*v[h_index][1])).unsqueeze(0)
             cat_tran_high=torch.cat((tran_high1,tran_high2),dim=0)
             cat_tran_high=cat_tran_high.unsqueeze(1)
-            cat_tran_high=F.interpolate(cat_tran_high, (320,320), mode='bilinear', align_corners=True)
-            high_features_tran.append(cat_tran_high)
+            gft=F.interpolate(cat_tran_high, (320,320), mode='bilinear', align_corners=True)
+            high_features_tran.append(gft)
+            gft+=gft
             h_index=h_index+1
             print('ok too')
         
@@ -644,8 +652,8 @@ class Decoder(nn.Module):
             
             print('low_features_tran',low_features_tran[m].shape)
             
-
-        return low_features_conv,low_features_tran,high_features_conv,high_features_tran
+       
+        return lfc,lft,gft,gfc
 
 class JL_DCF(nn.Module):
     def __init__(self,JLModule,lde_layers,coarse_layer,gde_layers,decoder):
