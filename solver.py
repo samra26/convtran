@@ -97,6 +97,7 @@ class Solver(object):
         self.optimizer.zero_grad()
         for epoch in range(self.config.epoch):
             r_sal_loss = 0
+            r_sal_loss_item=0
             for i, data_batch in enumerate(self.train_loader):
                 sal_image, sal_depth, sal_label = data_batch['sal_image'], data_batch['sal_depth'], data_batch[
                     'sal_label']
