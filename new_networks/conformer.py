@@ -597,14 +597,14 @@ class Decoder(nn.Module):
             print('low',low.shape)
             low_features_conv.append(low)
             lde_t[j]=self.fc1(lde_t[j])
-            low_features_tran.append(torch.cat((lde_t[j][1]*(self.softmax(q[l_index][1].squeeze(1)*k[l_index][0].squeeze(1))*v[l_index][0].squeeze(1)),lde_t[l_index][0]*(self.softmax(q[l_index][0].squeeze(1)*k[l_index][1].squeeze(1))*v[l_index][1].squeeze(1))),dim=1))
-            print('ok')
+            low_features_tran.append(torch.cat((lde_t[j][1]*(self.softmax(q[l_index][1].squeeze(1)*k[l_index][0].squeeze(1))*v[l_index][0].squeeze(1)),lde_t[l_index][0]*(self.softmax(q[l_index][0].squeeze(1)*k[l_index][1].squeeze(1))*v[l_index][1].squeeze(1))),dim=0))
+            print('low_features_tran',low_features_tran[0].shape)
             l_index=l_index+1
         for k1 in range(len(gde_c)):
-            high_features_conv.append(torch.cat((gde_c[k1][0] + gde_c[k1][1], gde_c[k1][0] * gde_c[k1][1]), dim=1))
+            high_features_conv.append(torch.cat((gde_c[k1][0] + gde_c[k1][1], gde_c[k1][0] * gde_c[k1][1]), dim=0))
             gde_t[k1]=self.fc1(gde_t[k1])
             #high_features_tran.append(torch.cat((gde_t[k][1]*(self.softmax(q[h_index][1].squeeze(1)*k[h_index][0].squeeze(1))*v[h_index][0].squeeze(1)),gde_t[k][0]*(self.softmax(q[h_index][0].squeeze(1)*k[h_index][1].squeeze(1))*v[h_index][1].squeeze(1))),dim=1))
-            high_features_tran.append(torch.cat((gde_t[k1][1]*(self.softmax(q[h_index][1].squeeze(1)*k[h_index][0].squeeze(1))*v[h_index][0].squeeze(1)),gde_t[k1][0]*(self.softmax(q[h_index][0].squeeze(1)*k[h_index][1].squeeze(1))*v[h_index][1].squeeze(1))),dim=1))
+            high_features_tran.append(torch.cat((gde_t[k1][1]*(self.softmax(q[h_index][1].squeeze(1)*k[h_index][0].squeeze(1))*v[h_index][0].squeeze(1)),gde_t[k1][0]*(self.softmax(q[h_index][0].squeeze(1)*k[h_index][1].squeeze(1))*v[h_index][1].squeeze(1))),dim=0))
             h_index=h_index+1
             print('ok too')
         #low_features_tran=low_features_tran.unsqueeze(0)
