@@ -470,7 +470,7 @@ class JLModule(nn.Module):
     def load_pretrained_model(self, model_path):
         pretrained_dict = torch.load(model_path)
         model_dict = self.backbone.state_dict()
-        pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict}
+        pretrained_dict = {ka: va for ka, va in pretrained_dict.items() if ka in model_dict}
         model_dict.update(pretrained_dict)
         self.backbone.load_state_dict(model_dict)
         
@@ -658,6 +658,9 @@ class JL_DCF(nn.Module):
         print('gde_c',gde_c[0].shape,len(gde_c))
         print('gde_t',gde_t[0].shape,len(gde_t))
         print('coarse_sal',coarse_sal.shape)
+        q=q.permute(0,2,1,3)
+        k=k.permute(0,2,1,3)
+        v=v.permute(0,2,1,3)
         for i in range(len(q)):
             print('q',q[i].shape,len(q))
             print('k',k[i].shape,len(k))
