@@ -629,7 +629,7 @@ class Decoder(nn.Module):
             high_features_tran.append(torch.cat((tran_high1,tran_high2),dim=0))
             h_index=h_index+1
             print('ok too')
-        high_features_tran[0]=high+features_tran[0].chunk(400,dim=1)
+        high_features_tran[0]=high_features_tran[0].chunk(400,dim=1)
         for m in range(7):
             print('high_features_conv',high_features_conv[m].shape)
             print('high_features_tran',high_features_tran[m].shape)
