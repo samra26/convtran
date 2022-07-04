@@ -571,7 +571,11 @@ class GDELayer(nn.Module):
                 out_RA.append(self.conv1024(c_att))
             else:
                 out_RA.append(self.conv512(c_att))
-            gde_t.append((y[j][0]*y[j][1]).unsqueeze(0))
+            print('conv gde out',out_RA[0].shape)
+            sum_t_gde=(y[j][0]+y[j][1]).unsqueeze(0)
+            mul_t_gde=(y[j][0]*y[j][1]).unsqueeze(0)
+            gde_t.append(torch.cat((sum_t_gde,mul_t_gde),dim=0))
+            print('tran gde out',gde_t[0].shape)
 
                 
             
