@@ -592,8 +592,10 @@ class Decoder(nn.Module):
             print('decoder lde_c',lde_c[j].shape)
             lde_c[j]=self.upsample(lde_c[j])
             print('decoder lde_c after upsample',lde_c[j].shape,lde_c[j][0].shape,lde_c[j][1].shape)
-            
-            low=torch.cat((lde_c[j][0] + lde_c[j][1], lde_c[j][0] * lde_c[j][1]), dim=0)
+            sum_low=(lde_c[j][0] + lde_c[j][1]).unsqueeze(0)
+            mul_low=(lde_c[j][0] * lde_c[j][1]).unsqueeze(0)
+            print('sumlow mullow',sum_low.shape,mul_low.shape)
+            low=torch.cat((sum_low,mul_low), dim=0)
             print('low',low.shape)
             low_features_conv.append(low)
             lde_t[j]=self.fc1(lde_t[j])
