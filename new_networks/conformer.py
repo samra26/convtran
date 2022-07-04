@@ -429,7 +429,7 @@ class Conformer(nn.Module):
         # pdb.set_trace()
         # stem stage [N, 3, 224, 224] -> [N, 64, 56, 56]
         x_base = self.maxpool(self.act1(self.bn1(self.conv1(x))))
-        print('x_base',x_base.shape)
+        #print('x_base',x_base.shape)
         conv_features.append(x_base)
 
         # 1 stage
@@ -437,13 +437,13 @@ class Conformer(nn.Module):
         conv_features.append(x)
 
         x_t = self.trans_patch_conv(x_base).flatten(2).transpose(1, 2)
-        print('x_t flatten',x_t.shape)
+        #print('x_t flatten',x_t.shape)
         tran_features.append(x_t)
        
         x_t = torch.cat([cls_tokens, x_t], dim=1)
-        print('x_t n tokens',x_t.shape)
+        #print('x_t n tokens',x_t.shape)
         x_t,q1,k1,v1 = self.trans_1(x_t)
-        print('x_t tran_1 q k  v',x_t.shape,q1.shape,k1.shape,v1.shape)
+        #print('x_t tran_1 q k  v',x_t.shape,q1.shape,k1.shape,v1.shape)
         tran_features.append(x_t)
         q.append(q1)
         k.append(k1)
@@ -478,8 +478,8 @@ class JLModule(nn.Module):
     def forward(self, x):
 
         conv,tran,q,k,v = self.backbone(x)
-        for i in range(len(conv)):
-            print(i,"     ",conv[i].shape,tran[i].shape)
+        '''for i in range(len(conv)):
+            print(i,"     ",conv[i].shape,tran[i].shape)'''
         
 
         return conv,tran,q,k,v # list of tensor that compress model output
@@ -501,13 +501,13 @@ class LDELayer(nn.Module):
         result=[]
         tran_c=[]
         
-        for i in range(len(list_x)):
+        '''for i in range(len(list_x)):
             rgb_conv = list_x[i][0]
             depth_conv = list_x[i][1]
             rgb_tran = list_y[i][0]
             depth_tran = list_y[i][1]
             print("******LDE layer******")
-            print(i,"     ",rgb_conv.shape,rgb_tran.shape,depth_tran.shape)
+            print(i,"     ",rgb_conv.shape,rgb_tran.shape,depth_tran.shape)'''
         for j in range(1,5):
             fconv_c=(self.conv_c(list_x[j][0])).unsqueeze(0)
             a=(self.conv_d1(list_x[j][1])).unsqueeze(0)  
@@ -518,7 +518,7 @@ class LDELayer(nn.Module):
             tran_c.append(torch.cat((sum_t_lde,mul_t_lde),dim=0))
             sum=torch.cat((fconv_c, fconv_d), dim=0)
             result.append(sum)
-            print('LDE conv tran output',sum.shape,tran_c[0].shape)
+            #print('LDE conv tran output',sum.shape,tran_c[0].shape)
             
             
 
@@ -556,7 +556,7 @@ class GDELayer(nn.Module):
         for j in range(12,4,-1):
             rgb_part=(x[j][0]).unsqueeze(0)
             depth_part=(x[j][1]).unsqueeze(0)
-            print('shape of y',y[j][0].shape,y[j][1].shape)
+            #print('shape of y',y[j][0].shape,y[j][1].shape)
             if (rgb_part.size(2)!= coarse_sal.size(2)) or (rgb_part.size(3) != coarse_sal.size(3)):
                 rgb_part = F.interpolate(rgb_part, w, mode='bilinear', align_corners=True)
                 depth_part = F.interpolate(depth_part, w, mode='bilinear', align_corners=True)
@@ -571,11 +571,11 @@ class GDELayer(nn.Module):
                 out_RA.append(self.conv1024(c_att))
             else:
                 out_RA.append(self.conv512(c_att))
-            print('conv gde out',out_RA[0].shape)
+            #print('conv gde out',out_RA[0].shape)
             sum_t_gde=(y[j][0]+y[j][1]).unsqueeze(0)
             mul_t_gde=(y[j][0]*y[j][1]).unsqueeze(0)
             gde_t.append(torch.cat((sum_t_gde,mul_t_gde),dim=0))
-            print('tran gde out',gde_t[0].shape)
+            #print('tran gde out',gde_t[0].shape)
 
                 
             
@@ -603,23 +603,23 @@ class Decoder(nn.Module):
             q[a]=q[a].permute(0,2,1,3).flatten(2)
             k[a]=k[a].permute(0,2,1,3).flatten(2)
             v[a]=v[a].permute(0,2,1,3).flatten(2)
-            print('shape of q',q[a].shape)
+            #print('shape of q',q[a].shape)
         l_index=0
         h_index=4
         for j in range(len(lde_c)):
-            print('decoder lde_c',lde_c[j].shape)
+            #print('decoder lde_c',lde_c[j].shape)
             lde_c[j]=self.upsample(lde_c[j])
-            print('decoder lde_c after upsample',lde_c[j].shape,lde_c[j][0].shape,lde_c[j][1].shape)
+            #print('decoder lde_c after upsample',lde_c[j].shape,lde_c[j][0].shape,lde_c[j][1].shape)
             sum_low=(lde_c[j][0] + lde_c[j][1]).unsqueeze(0)
             mul_low=(lde_c[j][0] * lde_c[j][1]).unsqueeze(0)
-            print('sumlow mullow',sum_low.shape,mul_low.shape)
+            #print('sumlow mullow',sum_low.shape,mul_low.shape)
             lfc=torch.cat((sum_low,mul_low), dim=0)
-            print('lfc',lfc.shape)
+            #print('lfc',lfc.shape)
             low_features_conv.append(lfc)
             lfc+=lfc
             tran_low1=(lde_t[j][1]*(self.softmax(q[l_index][1]*k[l_index][0])*v[l_index][0])).unsqueeze(0)
             tran_low2=(lde_t[j][0]*(self.softmax(q[l_index][0]*k[l_index][1])*v[l_index][1])).unsqueeze(0)
-            print('tran low1 2',tran_low1.shape,tran_low2.shape)
+            #print('tran low1 2',tran_low1.shape,tran_low2.shape)
             cat_tran_low=torch.cat((tran_low1,tran_low2),dim=0)
             cat_tran_low=cat_tran_low.unsqueeze(1)
             lft=F.interpolate(cat_tran_low, (320,320), mode='bilinear', align_corners=True)
@@ -642,17 +642,17 @@ class Decoder(nn.Module):
             high_features_tran.append(gft)
             gft+=gft
             h_index=h_index+1
-            print('ok too')
+            #print('ok too')
         
-        for m in range(7):
+        '''for m in range(7):
             print('high_features_conv',high_features_conv[m].shape)
             print('high_features_tran',high_features_tran[m].shape)
         for m in range(3):
             print('low_features_conv',low_features_conv[m].shape)
             
-            print('low_features_tran',low_features_tran[m].shape)
+            print('low_features_tran',low_features_tran[m].shape)'''
             
-        print(lfc.shape,lft.shape,gft.shape,gfc.shape,len(lfc))
+        #print(lfc.shape,lft.shape,gft.shape,gfc.shape,len(lfc))
         return lfc,lft,gft,gfc
 
 class JL_DCF(nn.Module):
@@ -671,7 +671,7 @@ class JL_DCF(nn.Module):
         lde_c,lde_t = self.lde(x,y)
         coarse_sal=self.coarse_layer(x[12],y[12])
         gde_c,gde_t=self.gde_layers(x,y,coarse_sal)
-        print('lde_c',lde_c[0].shape,len(lde_c))
+        '''print('lde_c',lde_c[0].shape,len(lde_c))
         print('lde_t',lde_t[0].shape,len(lde_t))
         print('gde_c',gde_c[0].shape,len(gde_c))
         print('gde_t',gde_t[0].shape,len(gde_t))
@@ -680,7 +680,7 @@ class JL_DCF(nn.Module):
         for i in range(len(q)):
             print('q',q[i].shape,len(q))
             print('k',k[i].shape,len(k))
-            print('v',v[i].shape,len(v))
+            print('v',v[i].shape,len(v))'''
         sal_lde_conv,sal_lde_tran,sal_gde_conv,sal_gde_tran=self.decoder(lde_c,gde_c,lde_t,gde_t,q,k,v)
         
         return sal_lde_conv,sal_lde_tran,sal_gde_conv,sal_gde_tran,coarse_sal
