@@ -513,7 +513,7 @@ class LDELayer(nn.Module):
             a=(self.conv_d1(list_x[j][1])).unsqueeze(0)  
             b=self.conv_d2(a)
             fconv_d=self.relu(self.conv_d3(b))
-            tran_c.append(list_y[j][0]*list_y[j][1])
+            tran_c.append((list_y[j][0]*list_y[j][1]).unsqueeze(0))
             sum=torch.cat((fconv_c, fconv_d), dim=0)
             result.append(sum)
             
@@ -568,7 +568,7 @@ class GDELayer(nn.Module):
                 out_RA.append(self.conv1024(c_att))
             else:
                 out_RA.append(self.conv512(c_att))
-            gde_t.append(y[j][0]*y[j][1])
+            gde_t.append((y[j][0]*y[j][1]).unsqueeze(0))
 
                 
             
