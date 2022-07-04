@@ -110,12 +110,16 @@ class Solver(object):
                 sal_loss_lde_conv = F.binary_cross_entropy_with_logits(sal_lde_conv, sal_label, reduction='sum')
                 print('sal_loss_lde_conv',sal_loss_lde_conv)
                 sal_loss_lde_tran = F.binary_cross_entropy_with_logits(sal_lde_tran, sal_label, reduction='sum')
+                print('sal_loss_lde_tran',sal_loss_lde_tran)
                 sal_loss_gde_conv= F.binary_cross_entropy_with_logits(sal_gde_conv, sal_label, reduction='sum')
+                print('sal_loss_gde_conv',sal_loss_gde_conv)
                 sal_loss_gde_tran = F.binary_cross_entropy_with_logits(sal_gde_tran, sal_label, reduction='sum')
-                
+                print('sal_loss_gde_tran',sal_loss_gde_tran)
 
                 sal_loss_fuse = sal_lde_conv + sal_lde_tran + sal_gde_conv + sal_gde_tran + 256 * sal_loss_coarse
+                print('sal_loss_fuse',sal_loss_fuse)
                 sal_loss = sal_loss_fuse / (self.iter_size * self.config.batch_size)
+                print('sal_loss',sal_loss)
                 r_sal_loss += sal_loss.data
                 sal_loss.backward()
 
