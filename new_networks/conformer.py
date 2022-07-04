@@ -609,11 +609,14 @@ class Decoder(nn.Module):
             print('ok too')
         #low_features_tran=low_features_tran.unsqueeze(0)
         #high_features_tran=high_features_tran.unsqueeze(0)
-        for m in range(12):
-            print('low_features_conv',low_features_conv[m].shape)
+        for m in range(4,12):
             print('high_features_conv',high_features_conv[m].shape)
-            print('low_features_tran',low_features_tran[m].shape)
             print('high_features_tran',high_features_tran[m].shape)
+        for m in range(3):
+            print('low_features_conv',low_features_conv[m].shape)
+            
+            print('low_features_tran',low_features_tran[m].shape)
+            
 
         return low_features_conv
 
