@@ -588,7 +588,7 @@ class Decoder(nn.Module):
         self.upsample=nn.ConvTranspose2d(64, 1, kernel_size=3, stride=4, padding=1, output_padding=3,dilation=1)
         self.fc1=nn.Linear(384,64)
         self.softmax=nn.Softmax()
-        
+        #self.qkv_linear=nn.Linear()
 
 
     def forward(self, lde_c,gde_c,lde_t,gde_t,q,k,v):
@@ -597,6 +597,7 @@ class Decoder(nn.Module):
         low_features_tran=[]
         high_features_tran=[]
         for a in range(len(q)):
+            q[a]=q[a].permute(0,2,1,3).flatten(2)
             print('shape of q',q[a].shape)
         l_index=0
         h_index=4
