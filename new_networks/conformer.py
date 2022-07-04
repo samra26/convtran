@@ -516,7 +516,7 @@ class LDELayer(nn.Module):
             tran_c.append((list_y[j][0]*list_y[j][1]).unsqueeze(0))
             sum=torch.cat((fconv_c, fconv_d), dim=0)
             result.append(sum)
-            print('LDE conv tran output,sum.shape,tran_c[0].shape)
+            print('LDE conv tran output',sum.shape,tran_c[0].shape)
             
             
 
