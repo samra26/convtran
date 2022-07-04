@@ -616,7 +616,9 @@ class Decoder(nn.Module):
             tran_low1=(lde_t[j][1]*(self.softmax(q[l_index][1]*k[l_index][0])*v[l_index][0])).unsqueeze(0)
             tran_low2=(lde_t[j][0]*(self.softmax(q[l_index][0]*k[l_index][1])*v[l_index][1])).unsqueeze(0)
             print('tran low1 2',tran_low1.shape,tran_low2.shape)
-            low_features_tran.append(torch.cat((tran_low1,tran_low2),dim=0))
+            cat_tran_low=torch.cat((tran_low1,tran_low2),dim=0)
+            cat_tran_low=cat_tran_low.chunk(400,dim=1)
+            low_features_tran.append(cat_tran_low)
             print('low_features_tran',low_features_tran[0].shape)
             l_index=l_index+1
         for k1 in range(len(gde_c)):
@@ -626,10 +628,12 @@ class Decoder(nn.Module):
             
             tran_high1=(gde_t[k1][1]*(self.softmax(q[h_index][1]*k[h_index][0])*v[h_index][0])).unsqueeze(0)
             tran_high2=(gde_t[k1][0]*(self.softmax(q[h_index][0]*k[h_index][1])*v[h_index][1])).unsqueeze(0)
-            high_features_tran.append(torch.cat((tran_high1,tran_high2),dim=0))
+            cat_tran_high=torch.cat((tran_high1,tran_high2),dim=0)
+            cat_tran_high=cat_tran_high.chunk(400,dim=1)
+            high_features_tran.append(cat_tran_high)
             h_index=h_index+1
             print('ok too')
-        high_features_tran[0]=high_features_tran[0].chunk(400,dim=1)
+        
         for m in range(7):
             print('high_features_conv',high_features_conv[m].shape)
             print('high_features_tran',high_features_tran[m].shape)
