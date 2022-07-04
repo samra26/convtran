@@ -617,7 +617,8 @@ class Decoder(nn.Module):
             tran_low2=(lde_t[j][0]*(self.softmax(q[l_index][0]*k[l_index][1])*v[l_index][1])).unsqueeze(0)
             print('tran low1 2',tran_low1.shape,tran_low2.shape)
             cat_tran_low=torch.cat((tran_low1,tran_low2),dim=0)
-            
+            cat_tran_low=cat_tran_low.unsqueeze(1)
+            cat_tran_low=F.interpolate(cat_tran_low, (320,320), mode='bilinear', align_corners=True)
             low_features_tran.append(cat_tran_low)
             
             l_index=l_index+1
@@ -629,7 +630,8 @@ class Decoder(nn.Module):
             tran_high1=(gde_t[k1][1]*(self.softmax(q[h_index][1]*k[h_index][0])*v[h_index][0])).unsqueeze(0)
             tran_high2=(gde_t[k1][0]*(self.softmax(q[h_index][0]*k[h_index][1])*v[h_index][1])).unsqueeze(0)
             cat_tran_high=torch.cat((tran_high1,tran_high2),dim=0)
-            
+            cat_tran_high=cat_tran_high.unsqueeze(1)
+            cat_tran_high=F.interpolate(cat_tran_high, (320,320), mode='bilinear', align_corners=True)
             high_features_tran.append(cat_tran_high)
             h_index=h_index+1
             print('ok too')
@@ -654,6 +656,7 @@ class JL_DCF(nn.Module):
         self.coarse_layer=coarse_layer
         self.gde_layers=gde_layers
         self.decoder=decoder
+        
         
     def forward(self, f_all):
         x,y,q,k,v = self.JLModule(f_all)
