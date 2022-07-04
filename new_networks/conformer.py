@@ -429,6 +429,7 @@ class Conformer(nn.Module):
         # pdb.set_trace()
         # stem stage [N, 3, 224, 224] -> [N, 64, 56, 56]
         x_base = self.maxpool(self.act1(self.bn1(self.conv1(x))))
+        print('x_base',x_base.shape)
         conv_features.append(x_base)
 
         # 1 stage
@@ -436,10 +437,13 @@ class Conformer(nn.Module):
         conv_features.append(x)
 
         x_t = self.trans_patch_conv(x_base).flatten(2).transpose(1, 2)
+        print('x_t flatten',x_t.shape)
         tran_features.append(x_t)
        
         x_t = torch.cat([cls_tokens, x_t], dim=1)
+        print('x_t n tokens',x_t.shape)
         x_t,q1,k1,v1 = self.trans_1(x_t)
+        print('x_t tran_1 q k  v',x_t.shape,q1.shape,k1.shape,v1.shape)
         tran_features.append(x_t)
         q.append(q1)
         k.append(k1)
