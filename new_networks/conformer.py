@@ -645,7 +645,7 @@ class Decoder(nn.Module):
             print('low_features_tran',low_features_tran[m].shape)
             
 
-        return low_features_conv
+        return low_features_conv,low_features_tran,high_features_conv,high_features_tran
 
 class JL_DCF(nn.Module):
     def __init__(self,JLModule,lde_layers,coarse_layer,gde_layers,decoder):
@@ -673,9 +673,9 @@ class JL_DCF(nn.Module):
             print('q',q[i].shape,len(q))
             print('k',k[i].shape,len(k))
             print('v',v[i].shape,len(v))
-        final_sal=self.decoder(lde_c,gde_c,lde_t,gde_t,q,k,v)
+        sal_lde_conv,sal_lde_tran,sal_gde_conv,sal_gde_tran=self.decoder(lde_c,gde_c,lde_t,gde_t,q,k,v)
         
-        return final_sal,coarse_sal
+        return sal_lde_conv,sal_lde_tran,sal_gde_conv,sal_gde_tran,coarse_sal
 
 def build_model(network='conformer', base_model_cfg='conformer'):
    
