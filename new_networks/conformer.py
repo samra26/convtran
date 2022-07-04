@@ -652,7 +652,7 @@ class Decoder(nn.Module):
             
             print('low_features_tran',low_features_tran[m].shape)
             
-       
+        print(lfc.shape,lft.shape,gft.shape,gfc.shape,len(lfc))
         return lfc,lft,gft,gfc
 
 class JL_DCF(nn.Module):
