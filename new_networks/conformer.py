@@ -478,8 +478,8 @@ class JLModule(nn.Module):
     def forward(self, x):
 
         conv,tran,q,k,v = self.backbone(x)
-        '''for i in range(len(conv)):
-            print(i,"     ",conv[i].shape,tran[i].shape)'''
+        for i in range(len(conv)):
+            print(i,"     ",conv[i].shape,tran[i].shape)
         
 
         return conv,tran,q,k,v # list of tensor that compress model output
